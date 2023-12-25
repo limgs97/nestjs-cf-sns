@@ -3,59 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostsModel } from './entities/posts.entity';
 
-/**
- * author: string;
- * title: string;
- * content: string;
- * likeCount: number;
- * commentCount: number;
- */
-
-export interface PostModel {
-  id: number;
-  author: string;
-  title: string;
-  content: string;
-  likeCount: number;
-  commentCount: number;
-}
-
-let posts: PostModel[] = [
-  {
-    id: 1,
-    author: '111',
-    title: 'sbwlstm alswl',
-    content: 'apdlzmdjq rhclrh dlTSms altswl',
-    likeCount: 1000000,
-    commentCount: 99999,
-  },
-  {
-    id: 2,
-    author: '111',
-    title: 'dhvltufdls',
-    content: 'apdlzmdjq rhclrh dlTSms altswl',
-    likeCount: 1000000,
-    commentCount: 99999,
-  },
-  {
-    id: 3,
-    author: '111',
-    title: 'qfkvmvm',
-    content: 'apdlzmdjq rhclrh dlTSms altswl',
-    likeCount: 1000000,
-    commentCount: 99999,
-  },
-];
-
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostsModel)
-    private readonly postRepository: Repository<PostModel>,
+    private readonly postRepository: Repository<PostsModel>,
   ) {}
 
   async getAllPost() {
-    const posts = await this.postRepository.find();
+    const posts = await this.postRepository.find({
+      relations: ['author'],
+    });
     return posts;
   }
 
@@ -66,19 +24,21 @@ export class PostsService {
       },
     });
 
-    if (!posts) {
+    if (!post) {
       throw new NotFoundException();
     }
 
     return post;
   }
 
-  async createPost(author: string, title: string, content: string) {
+  async createPost(authorId: number, title: string, content: string) {
     // 1) create -> 저장할 객체를 생성
     // 2) save -> 객체를 저장한다. (create 메서드에서 생성한 객체로)
 
     const post = this.postRepository.create({
-      author,
+      author: {
+        id: authorId,
+      },
       title,
       content,
       likeCount: 0,
@@ -90,12 +50,7 @@ export class PostsService {
     return newPost;
   }
 
-  async updatePost(
-    postId: number,
-    author: string,
-    title: string,
-    content: string,
-  ) {
+  async updatePost(postId: number, title: string, content: string) {
     // save 기능
     // 1) 만약에 데이터가 존재하지 않는다면 (id 기준으로) 새로 생성한다.
     // 2) 만약에 데이터가 존재한다면 (같은 id 값이 존재한다면) 존재하던 값을 업데이트한다.
@@ -108,10 +63,6 @@ export class PostsService {
 
     if (!post) {
       throw new NotFoundException();
-    }
-
-    if (author) {
-      post.author = author;
     }
 
     if (title) {
