@@ -1,11 +1,17 @@
+import { IsString } from 'class-validator';
+import { BaseModel } from 'src/common/entity/base.entity';
 import { UsersModel } from 'src/users/entities/users.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
-export class PostsModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class PostsModel extends BaseModel {
   // 1) UsersModel과 연동한다 FK를 이용해서
   // 2) null이 될 수 없다
   //
@@ -15,9 +21,15 @@ export class PostsModel {
   author: UsersModel;
 
   @Column()
+  @IsString({
+    message: 'title은 string 타입을 입력 해줘야 합니다.',
+  })
   title: string;
 
   @Column()
+  @IsString({
+    message: 'content는 string 타입을 입력 해줘야 합니다.',
+  })
   content: string;
 
   @Column()
